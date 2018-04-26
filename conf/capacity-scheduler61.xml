@@ -1,0 +1,369 @@
+<configuration>
+
+  <property>
+    <name>yarn.scheduler.capacity.maximum-am-resource-percent</name>
+    <value>0.2</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.maximum-applications</name>
+    <value>10000</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.node-locality-delay</name>
+    <value>40</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.queue-mappings-override.enable</name>
+    <value>false</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.resource-calculator</name>
+    <value>org.apache.hadoop.yarn.util.resource.DefaultResourceCalculator</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.accessible-node-labels</name>
+    <value>*</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.accessible-node-labels.test.capacity</name>
+    <value>100</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.accessible-node-labels.test.maximum-capacity</name>
+    <value>100</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.acl_administer_queue</name>
+    <value>*</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.capacity</name>
+    <value>100</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.default.accessible-node-labels</name>
+    <value>*</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.default.accessible-node-labels.test.capacity</name>
+    <value>0</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.default.accessible-node-labels.test.maximum-capacity</name>
+    <value>100</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.default.acl_submit_applications</name>
+    <value>*</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.default.capacity</name>
+    <value>24.00</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.default.maximum-capacity</name>
+    <value>24.00</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.default.priority</name>
+    <value>0</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.default.state</name>
+    <value>RUNNING</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.default.user-limit-factor</name>
+    <value>1</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.demo1.capacity</name>
+    <value>2.5</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.demo1.maximum-capacity</name>
+    <value>2.5</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.demo1.priority</name>
+    <value>0</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.demo2.capacity</name>
+    <value>2.5</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.demo2.maximum-capacity</name>
+    <value>20</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.demo2.priority</name>
+    <value>0</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.father.acl_administer_queue</name>
+    <value>*</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.father.acl_submit_applications</name>
+    <value>*</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.father.capacity</name>
+    <value>1</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.father.child.acl_administer_queue</name>
+    <value>*</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.father.child.acl_submit_applications</name>
+    <value>*</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.father.child.capacity</name>
+    <value>100</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.father.child.maximum-capacity</name>
+    <value>100</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.father.child.minimum-user-limit-percent</name>
+    <value>100</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.father.child.priority</name>
+    <value>0</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.father.child.state</name>
+    <value>RUNNING</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.father.child.user-limit-factor</name>
+    <value>1</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.father.maximum-capacity</name>
+    <value>1</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.father.minimum-user-limit-percent</name>
+    <value>100</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.father.priority</name>
+    <value>0</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.father.state</name>
+    <value>RUNNING</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.father.user-limit-factor</name>
+    <value>1</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.hello.capacity</name>
+    <value>2.50</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.hello.maximum-capacity</name>
+    <value>2.50</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.maximum-capacity</name>
+    <value>100</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.ocsp.accessible-node-labels</name>
+    <value>*</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.ocsp.accessible-node-labels.test.capacity</name>
+    <value>100</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.ocsp.accessible-node-labels.test.maximum-capacity</name>
+    <value>100</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.ocsp.acl_administer_queue</name>
+    <value>*</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.ocsp.acl_submit_applications</name>
+    <value>*</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.ocsp.capacity</name>
+    <value>50</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.ocsp.default-node-label-expression</name>
+    <value>test</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.ocsp.maximum-capacity</name>
+    <value>50</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.ocsp.minimum-user-limit-percent</name>
+    <value>100</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.ocsp.ordering-policy</name>
+    <value>fifo</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.ocsp.priority</name>
+    <value>0</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.ocsp.state</name>
+    <value>RUNNING</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.ocsp.user-limit-factor</name>
+    <value>1</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.priority</name>
+    <value>0</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.queues</name>
+    <value>default,demo1,demo2,father,ocsp,zhaoyimmr1,spark001,testmr001,testmr007,testmr008,testmr010,testmr011,hello
+    </value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.spark001.capacity</name>
+    <value>2.50</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.spark001.maximum-capacity</name>
+    <value>2.50</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.testmr001.capacity</name>
+    <value>2.50</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.testmr001.maximum-capacity</name>
+    <value>2.50</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.testmr007.capacity</name>
+    <value>2.50</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.testmr007.maximum-capacity</name>
+    <value>2.50</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.testmr008.capacity</name>
+    <value>2.50</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.testmr008.maximum-capacity</name>
+    <value>2.50</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.testmr010.capacity</name>
+    <value>2.50</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.testmr010.maximum-capacity</name>
+    <value>2.50</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.testmr011.capacity</name>
+    <value>2.50</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.testmr011.maximum-capacity</name>
+    <value>2.50</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.zhaoyimmr1.capacity</name>
+    <value>2.50</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.zhaoyimmr1.maximum-capacity</name>
+    <value>2.50</value>
+  </property>
+
+</configuration>

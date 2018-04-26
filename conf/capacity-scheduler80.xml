@@ -1,0 +1,186 @@
+<configuration>
+  <property>
+    <name>yarn.scheduler.capacity.maximum-am-resource-percent</name>
+    <value>0.2</value>
+  </property>
+  <property>
+    <name>yarn.scheduler.capacity.maximum-applications</name>
+    <value>10000</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.node-locality-delay</name>
+    <value>40</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.queue-mappings-override.enable</name>
+    <value>false</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.resource-calculator</name>
+    <value>org.apache.hadoop.yarn.util.resource.DefaultResourceCalculator</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.accessible-node-labels</name>
+    <value>test</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.accessible-node-labels.test.capacity</name>
+    <value>100</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.accessible-node-labels.test.maximum-capacity</name>
+    <value>100</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.acl_administer_queue</name>
+    <value></value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.acl_submit_applications</name>
+    <value>*</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.capacity</name>
+    <value>100</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.default.accessible-node-labels</name>
+    <value>*</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.default.accessible-node-labels.test.capacity</name>
+    <value>0</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.default.accessible-node-labels.test.maximum-capacity</name>
+    <value>0</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.default.acl_administer_queue</name>
+    <value>*</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.default.acl_submit_applications</name>
+    <value>*</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.default.capacity</name>
+    <value>99</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.default.maximum-capacity</name>
+    <value>100</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.default.ordering-policy</name>
+    <value>fifo</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.default.state</name>
+    <value>RUNNING</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.default.user-limit-factor</name>
+    <value>1</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.maximum-capacity</name>
+    <value>100</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.ordering-policy</name>
+    <value>fifo</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.queues</name>
+    <value>default,testque</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.state</name>
+    <value>RUNNING</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.testque.accessible-node-labels</name>
+    <value>*</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.testque.accessible-node-labels.test.capacity</name>
+    <value>100</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.testque.accessible-node-labels.test.maximum-capacity</name>
+    <value>100</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.testque.acl_administer_queue</name>
+    <value>ocdc</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.testque.acl_submit_applications</name>
+    <value>*</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.testque.capacity</name>
+    <value>1</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.testque.default-node-label-expression</name>
+    <value>test</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.testque.maximum-capacity</name>
+    <value>100</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.testque.minimum-user-limit-percent</name>
+    <value>100</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.testque.ordering-policy</name>
+    <value>fifo</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.testque.state</name>
+    <value>RUNNING</value>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.testque.user-limit-factor</name>
+    <value>1</value>
+  </property>
+
+</configuration>

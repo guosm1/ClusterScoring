@@ -4,3 +4,4 @@ model/
 model_input/
 model_out/
 .idea/
+*.pyc

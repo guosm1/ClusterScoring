@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 import json
 import os
-from utils import Singleton
 
 class Config:
-  __metaclass__ = Singleton
   def __init__(self, path=None):
     self.config_file_path = path
     if path is not None:

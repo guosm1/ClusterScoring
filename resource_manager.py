@@ -1,8 +1,8 @@
 import numpy as np
 import xml.etree.ElementTree as ET
-from treelib import Tree
-
 import utils
+from file_operator import FileOperator
+from treelib import Tree
 from utils import QueueConfig, QueueWish, Singleton
 
 
@@ -161,10 +161,8 @@ class QueueData(object):
   def get_job_count(self):
     return self.cur_metric.job_count
 
-
-class RMQueue:
+class RMQueue(object):
   __metaclass__ = Singleton
-
   def __init__(self):
     self.tree = Tree()
     self.MAX_METRIC_COUNT = 12
@@ -184,56 +182,15 @@ class RMQueue:
   def display(self):
     self.tree.show()
 
-  def display_score_old(self, queue=None, depth=0):
-    if queue is None:
-      queue = self.get_root()
-      print('------------' + utils.get_str_time() + ' SCORE ----------')
-      print(24 * ' ' + '     SLOWDOWN                MEMORY USAGE ')
-      print('QUEUE NAME' + 16 * ' ' + ' AVG        DIV            AVG        DIV')
-
-    if depth >= 0:
-      print(queue.tag + (22 - len(queue.tag)) * ' ' + \
-            '%8.3f' % queue.data.get_slowdown(), \
-            '  %8.3f    ' % queue.data.get_slowdown_div(), \
-            '  %8.3f' % queue.data.get_mem_usage(), \
-            '  %8.3f' % queue.data.get_mem_usage_div())
-      """                                              
-      print(queue.tag, '(slowdown: %.3f' % queue.data.get_slowdown(), \
-                       'div: %.3f)' % queue.data.get_slowdown_div(), \
-                       '(mem usage: %.3f' % queue.data.get_mem_usage(), \
-                       'div: %.3f)' % queue.data.get_mem_usage_div())
-      """
-    else:
-      print('-' * depth + queue.tag, '(slowdown: %.3f' % queue.data.get_slowdown(), \
-            'div: %.3f)' % queue.data.get_slowdown_div(), \
-            '(mem usage: %.3f' % queue.data.get_mem_usage(), \
-            'div: %.3f)' % queue.data.get_mem_usage_div())
-
-    if self.is_leaf(queue.tag) == False:
-      children = self.tree.children(queue.tag)
-      for child in children:
-        self.display_score(child, depth + 2)
-
   def display_score(self, queue=None, depth=0):
     if queue is None:
       queue = self.get_root()
       print('------------' + utils.get_str_time() + ' SCORE ----------')
-      print(24 * ' ' + '     PENDING                 MEMORY USAGE ')
-      print('QUEUE NAME' + 16 * ' ' + ' AVG        DIV            AVG        DIV')
+      print('\tPENDING\tMEMORY USAGE')
+      print('QUEUE NAME\tAVG\tDIV\tAVG\tDIV')
+    print(queue.tag + '\t%8.3f' % queue.data.get_pending() + '\t%8.3f' % queue.data.get_pending_div() + '\t%8.3f' % queue.data.get_mem_usage() + '\t%8.3f' % queue.data.get_mem_usage_div())
 
-    if depth >= 0:
-      print(queue.tag + (22 - len(queue.tag)) * ' ' + \
-            '%8.3f' % queue.data.get_pending(), \
-            '  %8.3f    ' % queue.data.get_pending_div(), \
-            '  %8.3f' % queue.data.get_mem_usage(), \
-            '  %8.3f' % queue.data.get_mem_usage_div())
-    else:
-      print('-' * depth + queue.tag, '(slowdown: %.3f' % queue.data.get_slowdown(), \
-            'div: %.3f)' % queue.data.get_slowdown_div(), \
-            '(mem usage: %.3f' % queue.data.get_mem_usage(), \
-            'div: %.3f)' % queue.data.get_mem_usage_div())
-
-    if self.is_leaf(queue.tag) == False:
+    if not self.is_leaf(queue.tag):
       children = self.tree.children(queue.tag)
       for child in children:
         self.display_score(child, depth + 2)
@@ -244,13 +201,10 @@ class RMQueue:
       print('------------' + utils.get_str_time() + ' PREDICTION ----------')
       print('QUEUE NAME            DESIRED CAPACITY')
 
-    if depth >= 0:
-      print(queue.tag + (22 - len(queue.tag)) * ' ', ' %8.3f' % queue.data.wish.capacity)
+    print(queue.tag + '\t%8.3f' % queue.data.wish.capacity)
       # print(queue.tag, 'desired capacity: %.3f' % queue.data.wish.capacity)
-    else:
-      print('-' * depth + queue.tag, 'desired capacity: %.3f' % queue.data.wish.capacity)
 
-    if self.is_leaf(queue.tag) == False:
+    if not self.is_leaf(queue.tag):
       children = self.tree.children(queue.tag)
       for child in children:
         self.display_prediction(child, depth + 2)
@@ -259,72 +213,33 @@ class RMQueue:
     with open(path, 'a') as f:
       self.write_score_top_down(output=f)
 
-  def write_score_top_down_old(self, queue=None, depth=0, output=None):
-    if queue is None:
-      queue = self.get_root()
-      output.writelines(('\n---------', utils.get_str_time(), '  SCORE ---------\n'))
-      output.writelines(24 * ' ' + '     SLOWDOWN                MEMORY USAGE\n')
-      output.writelines('QUEUE NAME' + 16 * ' ' + ' AVG        DIV            AVG        DIV\n')
-
-    if depth >= 0:
-      output.writelines(queue.tag + (22 - len(queue.tag)) * ' ' + \
-                        '%8.3f' % queue.data.get_slowdown() + \
-                        '  %8.3f    ' % queue.data.get_slowdown_div() + \
-                        '  %8.3f' % queue.data.get_mem_usage() + \
-                        '  %8.3f' % queue.data.get_mem_usage_div() + '\n')
-      """
-      output.writelines( (queue.tag, ' (slowdown: %.3f' % queue.data.get_slowdown(), \
-                        ' div: %.3f)' % queue.data.get_slowdown_div(), \
-                        ' (mem usage: %.3f' % queue.data.get_mem_usage(), \
-                        ' div: %.3f)' % queue.data.get_mem_usage_div(), '\n'))
-      """
-    else:
-      output.writelines(('-' * depth + queue.tag, ' (slowdown: %.3f' % queue.data.get_slowdown(), \
-                         ' div: %.3f)' % queue.data.get_slowdown_div(), \
-                         ' (mem usage: %.3f' % queue.data.get_mem_usage(), \
-                         ' div: %.3f)' % queue.data.get_mem_usage_div(), '\n'))
-
-    if self.is_leaf(queue.tag) == False:
-      children = self.tree.children(queue.tag)
-      for child in children:
-        self.write_score_top_down(child, depth + 2, output)
-
   def write_score_top_down(self, queue=None, depth=0, output=None):
     if queue is None:
       queue = self.get_root()
-      output.writelines(('\n---------', utils.get_str_time(), '  SCORE ---------\n'))
-      output.writelines(24 * ' ' + '     PENDING                 MEMORY USAGE\n')
-      output.writelines('QUEUE NAME' + 16 * ' ' + ' AVG        DIV            AVG        DIV\n')
+      output.writelines('------------' + utils.get_str_time() + ' SCORE ----------\n')
+      output.writelines('\tPENDING\tMEMORY USAGE\n')
+      output.writelines('QUEUE NAME\tAVG\tDIV\tAVG\tDIV\n')
 
-    output.writelines(queue.tag + (22 - len(queue.tag)) * ' ' + \
-                      '%8.3f' % queue.data.get_pending() + \
-                      '  %8.3f    ' % queue.data.get_pending_div() + \
-                      '  %8.3f' % queue.data.get_mem_usage() + \
-                      '  %8.3f' % queue.data.get_mem_usage_div() + '\n')
+    output.writelines(queue.tag + '\t%8.3f' % queue.data.get_pending() + '\t%8.3f' % queue.data.get_pending_div() + '\t%8.3f' % queue.data.get_mem_usage() + '\t%8.3f' % queue.data.get_mem_usage_div() + '\n')
 
-    if self.is_leaf(queue.tag) == False:
+    if not self.is_leaf(queue.tag):
       children = self.tree.children(queue.tag)
       for child in children:
         self.write_score_top_down(child, depth + 2, output)
 
   def write_prediction(self, path):
-    with open(path, 'a') as f:
+    if not FileOperator.file_exits(path):
+      with open(path, 'a'):
+        pass
+    with open(path, 'w') as f:
       self.write_prediction_top_down(output=f)
 
   def write_prediction_top_down(self, queue=None, depth=0, output=None):
     if queue is None:
       queue = self.get_root()
-      output.writelines(('\n---------', utils.get_str_time(), '  PREDICTION---------\n'))
-      output.writelines('QUEUE NAME            DESIRED CAPACITY\n')
 
-    if depth >= 0:
-      output.writelines(queue.tag + (22 - len(queue.tag)) * ' ' + ' %8.3f' % queue.data.wish.capacity + '\n')
-      # output.writelines( (queue.tag, ' desired capacity: %.3f' % queue.data.wish.capacity, '\n'))
-    else:
-      output.writelines(('-' * depth + queue.tag, \
-                         ' desired capacity: %.3f' % queue.data.wish.capacity, '\n'))
-
-    if self.is_leaf(queue.tag) == False:
+    output.writelines(queue.tag + ',%.3f' % queue.data.wish.capacity + '\n')
+    if not self.is_leaf(queue.tag):
       children = self.tree.children(queue.tag)
       for child in children:
         self.write_prediction_top_down(child, depth + 2, output)
@@ -495,11 +410,14 @@ class RMQueue:
     if queue is None:
       queue = self.get_root()
 
-    memory_usage = 0.0
     if queue.is_leaf():
       abs_memory_usage = queue.data.cal_queue_memory_usage()
       abs_memory_capacity = queue.data.get_abs_capacity()
-      memory_usage = 100.0 * abs_memory_usage / abs_memory_capacity
+      memory_usage = None
+      if abs_memory_capacity == 0:
+        memory_usage = 0
+      else:
+        memory_usage = 100.0 * abs_memory_usage / abs_memory_capacity
       queue.data.set_mem_usage(memory_usage)
       queue.data.set_abs_memory_usage(abs_memory_usage)
     else:  # parent queue
@@ -612,8 +530,7 @@ class RMQueue:
       children = self.tree.children(queue.tag)
       for child in children:
         child.data.set_abs_capacity(queue.data.get_abs_capacity() * child.data.get_capacity() / 100.0)
-        # print(child.data.get_abs_capacity())
-        self.cal_capacity_top_down(child)
+        self.cal_abs_capacity_top_down(child)
 
   def cal_desired_capacity_top_down(self, queue=None):
     if queue is None:
@@ -625,7 +542,6 @@ class RMQueue:
     else:
       children = self.tree.children(queue.tag)
       abs_capacity = queue.data.wish.abs_capacity
-      remain_capaciy = 100.0
       for child in children:
         if child.data.config.fixed:
           child.data.wish.capacity = child.data.config.capacity
@@ -731,12 +647,12 @@ class RMQueue:
 
 
 def parseYarnConfig(conf):
-  YARN_CONFIG_HEAD = ["yarn", "scheduler", "capacity", "root"]
+  # YARN_CONFIG_HEAD = ["yarn", "scheduler", "capacity", "root"]
   YARN_PROPERTY_STATE = "state"
   YARN_PROPERTY_CAPACTIY = "capacity"
   YARN_PROPERTY_MAX_CAPACITY = "maximum-capacity"
   YARN_PROPERTY_QUEUE = "queues"
-  YARN_QUEUE_STATE = ["STOPPED", "RUNNING"]
+  # YARN_QUEUE_STATE = ["STOPPED", "RUNNING"]
 
   rmq = RMQueue()
   tree = ET.parse(conf)
@@ -752,18 +668,17 @@ def parseYarnConfig(conf):
     if len(names) < 5:
       continue
     if names[-1] == YARN_PROPERTY_QUEUE:
-      qName = names[-2]
-      print qName
-      queue = rmq.get_queue(qName)
+      qname = names[-2]
+      queue = rmq.get_queue(qname)
       if queue is None:
-        queue = rmq.create_queue(name=qName)
-
-      # children = value.text.split(',')
-      # for child in children:
-      #   if rmq.get_queue(child) is None:
-      #     rmq.create_queue(name=child, parent=qName)
-      #   else:
-      #     rmq.move_queue(src=child, dest=queue)
+        rmq.create_queue(name=qname)
+      children = value.text.split(',')
+      for child in children:
+        child = child.strip()
+        if rmq.get_queue(child) is None:
+          rmq.create_queue(name=child, parent=qname)
+        else:
+          rmq.move_queue(src=child, dest=queue)
 
   # the second loop set the configuration of each queue
   for p in root:
@@ -777,20 +692,20 @@ def parseYarnConfig(conf):
     if len(names) < 5:
       continue
     if names[-1] == YARN_PROPERTY_CAPACTIY:
-      qName = names[-2]
-      queue = rmq.get_queue(qName)
+      qname = names[-2]
+      queue = rmq.get_queue(qname)
       if queue is not None:
         capacity = float(value.text)
         queue.data.set_capacity(capacity)
     elif names[-1] == YARN_PROPERTY_MAX_CAPACITY:
-      qName = names[-2]
-      queue = rmq.get_queue(qName)
+      qname = names[-2]
+      queue = rmq.get_queue(qname)
       if queue is not None:
         max_capacity = float(value.text)
         queue.data.set_max_capacity(max_capacity)
     elif names[-1] == YARN_PROPERTY_STATE:
-      qName = names[-2]
-      queue = rmq.get_queue(qName)
+      qname = names[-2]
+      queue = rmq.get_queue(qname)
       if queue is not None:
         queue.data.set_state(value.text)
 
@@ -798,12 +713,12 @@ def parseYarnConfig(conf):
   return rmq
 
 if __name__ == '__main__':
-  rmq = parseYarnConfig('./conf/yarn_config.xml')
+  rmq = parseYarnConfig('./conf/capacity-scheduler61.xml')
   root = rmq.get_queue("root")
-  spark = rmq.get_queue("spark")
-  hive = rmq.get_queue("hive")
-  spark.data.wish.abs_capacity = 26.0
-  hive.data.wish.abs_capacity = 156.0
+  default = rmq.get_queue("default")
+  ocsp = rmq.get_queue("ocsp")
+  default.data.wish.abs_capacity = 26.0
+  ocsp.data.wish.abs_capacity = 156.0
 
   rmq.display_score()
   rmq.predict()

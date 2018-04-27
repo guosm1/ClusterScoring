@@ -1,24 +1,10 @@
-# encoding=utf8
-"""
-Created on  : 11/10/17
-@author: chenxf@chinaskycloud.com
-"""
-import json
 import os
 import csv
-
 
 class FileOperator(object):
   @staticmethod
   def write_to_csv(data, file, headers, write_header=True, model="w+"):
-    """
-    write data to csv
-    :param headers: the csv headers
-    :param data: type list
-    :return:
-    """
     from logger_util import get_logger
-
     logger = get_logger()
     with open(file, model) as f:
       try:

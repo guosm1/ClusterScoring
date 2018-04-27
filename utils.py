@@ -4,8 +4,8 @@ import time
 
 class Singleton(type):
   def __init__(self, *args, **kwargs):
-    self.__instance = None
     super(Singleton,self).__init__(*args, **kwargs)
+    self.__instance = None
 
   def __call__(self, *args, **kwargs):
     if self.__instance is None:
@@ -67,7 +67,6 @@ class MyException(Exception):
 
 def get_str_time():
   return time.strftime('%Y-%m-%d:%H:%M:%S', time.localtime(time.time()))
-
 
 if __name__ == '__main__':
   print(get_str_time())

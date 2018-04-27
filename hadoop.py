@@ -183,14 +183,13 @@ def main():
   response = requests.get("http://127.0.0.1:5001/update/all")
   if response.status_code == 200:
     print("success request http://127.0.0.1:5001/update/all")
+    response = requests.get('http://127.0.0.1:5002/train_lstm')
+    if response.status_code == 200:
+      print("success request http://127.0.0.1:5002/train_lstm")
+    else:
+      print("fail request http://127.0.0.1:5002/train_lstm")
   else:
     print("fail request http://127.0.0.1:5001/update/all")
-  response = requests.get('http://127.0.0.1:5002/train_lstm')
-  if response.status_code == 200:
-    print("success request http://127.0.0.1:5002/train_lstm")
-  else:
-    print("fail request http://127.0.0.1:5002/train_lstm")
-
 
 TIME_BEGIN = None
 TIME_END = None

@@ -13,28 +13,16 @@
 # limitations under the License.
 # ==============================================================================
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from os import path
-import os
-
-import multiprocessing
-import threading
 import tensorflow as tf
 
 from tensorflow.contrib.timeseries.python.timeseries import estimators as ts_estimators
 from tensorflow.contrib.timeseries.python.timeseries import model as ts_model
 import argparse
-import sys
-import requests
 from flask import Flask, url_for
 
 app = Flask(__name__)
 
-from config_util import ConfigUtil
-import numpy as np
 from file_operator import FileOperator
 import pandas as pd
 from project_dir import project_dir
@@ -235,71 +223,37 @@ def train(queue_name, csv_file, pre_file, model_dir, train_step, predict_step):
   plt.savefig('{0}.png'.format(queue_name))
   """
 
-
-def thread_main():
-  """
-  for queue to trainning model and predict
-  """
-
-  # cluster_df = pd.read_csv(CLUSTER_INFILE)
-  # total_mem = cluster_df["totalMB"].values[0]
-  # total_cpu = cluster_df["totalVirtualCores"].values[1]
-
+@app.route('/train_lstm')
+def main():
   scheduler_df = pd.read_csv(SCHEDULER_INFILE, error_bad_lines=False)
-
-  # scheduler_df["memory"] = scheduler_df["memory"] / total_mem
-  # scheduler_df["vCores"] = scheduler_df["vCores"] / total_cpu
-
-  queue_names = set(scheduler_df["queueName"].values)
-
-  scheduler_df = scheduler_df.set_index("queueName")
+  scheduler_df.set_index("queueName")
+  queue_names = scheduler_df["queueName"].values
 
   FileOperator.path_exits("model_input")
   FileOperator.path_exits("model_out")
+  print scheduler_df
 
-  # empty the pre_file
   FileOperator.write_list_tocsv([], PRE_FILE)
 
   for queue_name in queue_names:
     print('--------------queue:{0}-----------'.format(queue_name))
-    queue_information = scheduler_df.ix[queue_name, ["memory"]]
-    # queue_information['memory'] = round(queue_information['memory'], 2)
+    queue_information = scheduler_df.ix[[queue_name], "memory"]
     queue_information = queue_information.replace(0.0, 0.01)
     queue_information.insert(0, "times", range(queue_information.shape[0]))
 
+    print(queue_information)
     model_input_file = "./model_input/{0}.csv".format(queue_name)
 
     FileOperator.write_list_tocsv([], model_input_file)
 
-    queue_information.to_csv(
-      model_input_file,
-      index=False,
-      header=False)
+    queue_information.to_csv(model_input_file,index=False,header=False)
     model_dir = "./model/{0}".format(queue_name)
 
-    train(queue_name, model_input_file,
-          PRE_FILE, model_dir,
-          FLAGS.train_step, FLAGS.predict_step)
-
-
-@app.route('/train_lstm')
-def main():
-  try:
-    thread_main()
-  except Exception as e:
-    print(e)
-  requests.get("http://127.0.0.1:5001/score")
-  requests.get("http://127.0.0.1:5001/predict")
-  os.remove(SCHEDULER_INFILE)
-  return 'success train'
-
+    train(queue_name, model_input_file,PRE_FILE, model_dir,FLAGS.train_step, FLAGS.predict_step)
 
 SCHEDULER_INFILE = path.join(project_dir, "output/scheduler_summary.csv")
-
 CLUSTER_INFILE = path.join(project_dir, "output/cluster2.csv")
-
-PRE_FILE = path.join(project_dir, "model_out/prediction.csv")
-
+PRE_FILE = path.join(project_dir, "model_out/prediction1.csv")
 FLAGS = None
 
 if __name__ == '__main__':
@@ -327,4 +281,5 @@ if __name__ == '__main__':
 
   FLAGS = parser.parse_args()
   tf.logging.set_verbosity(tf.logging.INFO)
-  app.run(host='127.0.0.1', port='5002')
+  main()
+  # app.run(host='127.0.0.1', port='5002')

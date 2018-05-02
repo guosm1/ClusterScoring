@@ -122,7 +122,7 @@ class QueueData(object):
     if len(self.pendings) > 0:
       self.cur_metric.pending = np.mean(self.pendings)
     else:
-      self.cur_metric.pending = 0
+      self.cur_metric.pending = 0.0
 
   def get_capacity(self):
     return self.config.capacity

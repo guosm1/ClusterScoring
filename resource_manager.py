@@ -119,19 +119,16 @@ class RMQueue(object):
         avg_slowdown += slowdown / job_count
       queue.data.set_job_count(job_count)
       queue.data.cur_metric.slowdown = avg_slowdown
-    else:  # parent queue
-      # First, get its all chilren queue, and call each child's cal_slowdown function
+    else:
       children = self.tree.children(queue.tag)
       for child in children:
         self.cal_slowdown(child)
 
-      # Second, get the job count
       job_count = 0
       for child in children:
         job_count += child.data.get_job_count()
       queue.data.set_job_count(job_count)
 
-      # Finally, calculate the average slowdown of the queue
       if job_count == 0:
         queue.data.cur_metric.slowdown = avg_slowdown
         return avg_slowdown
@@ -149,7 +146,7 @@ class RMQueue(object):
       queue.data.cal_leaf_pending()
     else:
       children = self.tree.children(queue.tag)
-      # print str(queue.tag) + " " + str(queue.data.cur_metric.pending)
+      print str(queue.tag) + ": root"
       for child in children:
         self.cal_pending(child)
         queue.data.cur_metric.pending += child.data.get_pending()
@@ -493,13 +490,4 @@ def parseYarnConfig(conf):
 
 if __name__ == '__main__':
   rmq = parseYarnConfig('./conf/capacity-scheduler61.xml')
-  root = rmq.get_queue("root")
-  default = rmq.get_queue("default")
-  ocsp = rmq.get_queue("ocsp")
-  default.data.wish.abs_capacity = 26.0
-  ocsp.data.wish.abs_capacity = 156.0
-
-  rmq.display_score()
-  rmq.predict()
-  rmq.display_prediction()
-  rmq.write_prediction('test.txt')
+  rmq.display()

@@ -57,7 +57,7 @@ def predict():
 
 @app.route('/ping')
 def ping():
-  return ('ok')
+  return 'ok'
 
 
 def start_server(port=5000):

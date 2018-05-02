@@ -13,7 +13,8 @@ def update_scheduler_info(rmq, cfg):
       if queue is None:
         print("Unknown queue name", qc.name)
         continue
-      queue.data.update_queue_config(qc)
+      else:
+        queue.data.update_queue_config(qc)
 
 def update_mu_info(rmq, cfg):
   mu_file = cfg.get_scheduler_summary_path()
@@ -59,17 +60,6 @@ def update_app_info(rmq, cfg):
         continue
       queue.data.add_job(job)
 
-def update_prediction_info(rmq, cfg):
-  prediction_file = cfg.get_prediction_file()
-  if FileOperator.file_exits(prediction_file):
-    wishes = datainput.read_prediction_csv(prediction_file)
-    for wish in wishes:
-      queue = rmq.get_queue(wish.name)
-      if queue is None:
-        print("Unknown queue name5", wish.name)
-        continue
-      queue.data.update_wish(wish)
-
 def update_cluster_info(rmq, cfg):
   cluster_file = cfg.get_cluster_metric_path()
   if FileOperator.file_exits(cluster_file):
@@ -91,15 +81,15 @@ def update_predict_info(rmq, cfg):
       queue.data.update_queue_wish(wish)
 
 def update_all_info(rmq, cfg):
-  update_scheduler_info(rmq, cfg)
-  update_mu_info(rmq, cfg)
-  update_cluster_info(rmq, cfg)
-  update_app_info(rmq, cfg)
-  update_app_stopped_info(rmq, cfg)
-  update_app_started_info(rmq, cfg)
+  # update_scheduler_info(rmq, cfg)
+  # update_mu_info(rmq, cfg)
+  # update_cluster_info(rmq, cfg)
+  # update_app_info(rmq, cfg)
+  # update_app_stopped_info(rmq, cfg)
+  # update_app_started_info(rmq, cfg)
   update_predict_info(rmq, cfg)
   score(rmq, cfg)
-  predict(rmq, cfg)
+  # predict(rmq, cfg)
 
 def score(rmq, cfg):
   rmq.score()
@@ -110,15 +100,13 @@ def score(rmq, cfg):
 def predict(rmq, cfg):
   rmq.predict()
   rmq.display_prediction()
-  path = cfg.get_prediction_path()
+  path = cfg.get_stat_output_file()
   rmq.write_prediction(path)
 
 def start(cfg):
   rmq = resource_manager.parseYarnConfig(cfg.yarn_config_path)
   rmq.set_stat_interval(cfg.get_stat_interval())
   rmq.set_system_memory(cfg.get_sys_total_memory())
-  score(rmq, cfg)
-  predict(rmq, cfg)
   print('Starting to collecting and scoring ... ')
   import restserver
   restserver.start_server(cfg.get_rest_port())

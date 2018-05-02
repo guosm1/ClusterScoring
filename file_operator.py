@@ -31,6 +31,15 @@ class FileOperator(object):
     return False
 
   @staticmethod
+  def touch(file):
+    if os.path.isfile(file):
+      return False
+    else:
+      FileOperator.path_exits(os.path.dirname(file))
+      fd = open(file,'w')
+      fd.close()
+
+  @staticmethod
   def path_exits(file):
     if not os.path.exists(file):
       os.mkdir(file)

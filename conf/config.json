@@ -7,11 +7,11 @@
   "job_stopped_path": "./output/finishedapp.csv",
   "job_started_path": "./output/runningapp2.csv",
   "yarn_config_file": "./conf/capacity-scheduler61.xml",
-  "cluster_metric_path": "./output/cluster2.csv",
+  "cluster_metric_path": "./output/cluster.csv",
   "prediction_path": "./model_out/prediction.csv",
   "stat_output_file": "./output/stat.txt",
   "_comment_B": "System total memory in MB. It will be updated of new data written to cluster_metric_path",
   "sys_total_memory": 16384,
   "rest_port": 5001,
-  "valid_queue_count": 2
+  "valid_queue_count": 1
 }

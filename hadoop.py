@@ -5,29 +5,20 @@ Created on  : 17-10-30 上午10:23
 @author: chenxf@chinaskycloud.com
 """
 
-from __future__ import division
 import json
 import os
 import argparse
 
 from config_util import ConfigUtil
 from time_util import TimeUtil
-
-try:
-  from urllib2 import urlopen as urlopen
-  from urllib2 import URLError as urlerror
-except Exception:
-  from urllib.request import urlopen as urlopen
-  from urllib.error import URLError as urlerror
+from urllib2 import urlopen as urlopen
+from urllib2 import URLError as urlerror
 from logger_util import get_logger
 from file_operator import FileOperator
 from pandas.core.frame import DataFrame
 import requests
 import datetime
 
-'''
- 通过hadoop API获取成功执行完成的applications, queue信息。
-'''
 
 PWD = os.getcwd()
 CONFIG_FILE = PWD + "/conf/properties.conf"
@@ -50,32 +41,32 @@ class HadoopUtil(object):
     url = self.hadoop_url + "metrics"
     write_header = True
     cluster_file = os.path.join(self.file_path, "cluster.csv")
-    cluster_file2 = os.path.join(self.file_path, "cluster2.csv")
     if FileOperator.file_exits(cluster_file):
       write_header = False
     results = urlopen(url, timeout=2000).read()
     results = [json.loads(results)["clusterMetrics"]]
     self.memcpu_info["memory"] = results[0].get('totalMB', 0)
     self.memcpu_info["vCores"] = results[0].get('totalVirtualCores', 0)
-    self.get_applications_information()
     headers = results[0].keys()
     FileOperator.write_to_csv(results, cluster_file, headers=headers, write_header=write_header, model="a+")
-    FileOperator.write_to_csv(results, cluster_file2, headers=headers, model="w")
+    self.get_applications_information()
 
   def get_scheduler_info(self, running_application):
     logger.info("start get_scheduler_info")
     apps = running_application.copy(deep=True)
 
     apps = apps.groupby('queue')['allocatedMB', 'allocatedVCores'].sum()
-    apps.columns = ['memory_num', 'vCores_num']
     apps['queueName'] = apps.index
     apps.insert(0, 'totalMemory', self.memcpu_info['memory'])
     apps.insert(0, 'totalCpu', self.memcpu_info['vCores'])
-    apps.insert(0, 'memory', apps['memory_num'] / apps['totalMemory'])
-    apps.insert(0, 'vCores', apps['vCores_num'] / apps['totalCpu'])
+    apps.insert(0, 'memory', apps['allocatedMB'] / apps['totalMemory'])
+    apps.insert(0, 'vCores', apps['allocatedVCores'] / apps['totalCpu'])
 
     scheduler_file = os.path.join(self.file_path, "scheduler_summary.csv")
-    apps.to_csv(scheduler_file,index = False)
+    write_header = True
+    if FileOperator.file_exits(scheduler_file):
+      write_header = False
+    apps.to_csv(scheduler_file, header=write_header, index=False, mode="a+")
 
     logger.info("start get_cluster_scheduler")
     url = self.hadoop_url + "scheduler"
@@ -123,7 +114,7 @@ class HadoopUtil(object):
       logger.error(error)
     else:
       finished_data_frame.to_csv(finished_app_file, index=False)
-      self.get_scheduler_info(finished_data_frame)
+      # self.get_scheduler_info(finished_data_frame)
 
     try:
       running_data_list = json.loads(running_data)['apps']['app']
@@ -147,7 +138,7 @@ class HadoopUtil(object):
     else:
       running_data1.to_csv(running_app1_file, index=False)
       running_data2.to_csv(running_app2_file, index=False)
-      # self.get_scheduler_info(running_data_frame)
+      self.get_scheduler_info(running_data_frame)
 
   def get_commonjobs_information(self):
     logger.info("start get_commonjobs_information")

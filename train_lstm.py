@@ -154,12 +154,6 @@ class _LSTMModel(ts_model.SequentialTimeSeriesModel):
 
 
 def train(queue_name, csv_file, pre_file, model_dir, train_step, predict_step):
-  """
-  :param queue_name: the queue_name of the hadoop
-  :param csv_file_name: the input file to trainning model
-  :param pre_file_name: the output file of predict
-  :param model_dir: the dir to save model
-  """
   tf.logging.set_verbosity(tf.logging.INFO)
 
   csv_file_name = path.join(csv_file)
@@ -226,22 +220,20 @@ def train(queue_name, csv_file, pre_file, model_dir, train_step, predict_step):
 @app.route('/train_lstm')
 def main():
   scheduler_df = pd.read_csv(SCHEDULER_INFILE, error_bad_lines=False)
-  scheduler_df.set_index("queueName")
-  queue_names = scheduler_df["queueName"].values
+  scheduler_df = scheduler_df.set_index("queueName")
+  queue_names = scheduler_df.index.values
 
   FileOperator.path_exits("model_input")
   FileOperator.path_exits("model_out")
-  print scheduler_df
-
   FileOperator.write_list_tocsv([], PRE_FILE)
+  print scheduler_df
 
   for queue_name in queue_names:
     print('--------------queue:{0}-----------'.format(queue_name))
-    queue_information = scheduler_df.ix[[queue_name], "memory"]
-    queue_information = queue_information.replace(0.0, 0.01)
-    queue_information.insert(0, "times", range(queue_information.shape[0]))
+    queue_information = pd.DataFrame([scheduler_df.loc[queue_name, ["memory"]]])
+    # queue_information.insert(0, "times", queue_information.shape[0])
+    print queue_information
 
-    print(queue_information)
     model_input_file = "./model_input/{0}.csv".format(queue_name)
 
     FileOperator.write_list_tocsv([], model_input_file)
@@ -249,11 +241,11 @@ def main():
     queue_information.to_csv(model_input_file,index=False,header=False)
     model_dir = "./model/{0}".format(queue_name)
 
-    train(queue_name, model_input_file,PRE_FILE, model_dir,FLAGS.train_step, FLAGS.predict_step)
+    # train(queue_name, model_input_file, PRE_FILE, model_dir, FLAGS.train_step, FLAGS.predict_step)
 
 SCHEDULER_INFILE = path.join(project_dir, "output/scheduler_summary.csv")
-CLUSTER_INFILE = path.join(project_dir, "output/cluster2.csv")
-PRE_FILE = path.join(project_dir, "model_out/prediction1.csv")
+# CLUSTER_INFILE = path.join(project_dir, "output/cluster.csv")
+PRE_FILE = path.join(project_dir, "model_out/prediction.csv")
 FLAGS = None
 
 if __name__ == '__main__':

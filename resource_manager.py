@@ -3,163 +3,8 @@ import xml.etree.ElementTree as ET
 import utils
 from file_operator import FileOperator
 from treelib import Tree
-from utils import QueueConfig, QueueWish, Singleton
-
-
-class QueueMetric(object):
-  def __init__(self):
-    self.job_count = 0
-    self.abs_used_memory = 0
-    self.slowdown = 0.0
-    self.slowdown_div = 0.0
-    self.mem_usage = 0.0
-    self.abs_mem_usage = 0.0
-    self.mem_usage_div = 0.0
-    self.pending = 0.0
-    self.pending_div = 0.0
-
-
-class QueueData(object):
-  def __init__(self):
-    self.jobs = []
-    self.pendings = []
-    self.config = QueueConfig()
-    self.mus = []
-    self.cur_metric = QueueMetric()
-    self.metrics = []
-    self.totalMbs = []
-    self.wish = QueueWish()
-
-  def add_job(self, job):
-    self.jobs.append(job)
-
-  def add_pending(self, cnt):
-    self.pendings.append(cnt)
-
-  def add_totalMb(self, localMb):
-    self.totalMbs.append(localMb)
-
-  def clear_totalMb(self):
-    self.totalMbs = []
-
-  def cal_totalMb_mean(self):
-    l = len(self.totalMbs)
-    if l > 0:
-      self.config.abs_memory = np.mean(self.totalMbs)
-      # print(self.config.abs_memory)
-
-  def cal_queue_memory_usage(self):
-    l = len(self.mus)
-    if l > 0:
-      return np.mean(self.mus)
-    return 0
-
-  def clear_queue_memory_usage(self):
-    self.mus = []
-
-  def add_metric(self, metric):
-    self.metrics.append(metric)
-
-  def clear_jobs(self):
-    self.jobs = []
-
-  def clear_pendings(self):
-    self.pendings = []
-
-  def cal_leaf_mem_second(self):
-    total_memory_second = 0
-    for job in self.jobs:
-      total_memory_second += job.memory_seconds
-    return total_memory_second
-
-  def cal_leaf_pending(self):
-    if (len(self.pendings)):
-      self.cur_metric.pending = np.mean(self.pendings)
-
-  def get_capacity(self):
-    return self.config.capacity
-
-  def set_fixed(self, fixed):
-    self.config.fixed = fixed
-
-  def set_capacity(self, capacity):
-    self.config.capacity = float(capacity)
-
-  def set_max_capacity(self, max_capacity):
-    self.config.max_capacity = float(max_capacity)
-
-  def set_abs_capacity(self, abs_capacity):
-    self.config.abs_capacity = float(abs_capacity)
-
-  def get_abs_capacity(self):
-    return self.config.abs_capacity
-
-  def get_abs_memory_usage(self):
-    return self.cur_metric.abs_mem_usage
-
-  def set_abs_memory_usage(self, abs_memory_usage):
-    self.cur_metric.abs_mem_usage = float(abs_memory_usage)
-
-  def cal_abs_used_memory(self):
-    self.cur_metric.abs_used_memory = self.config.abs_memory * self.cur_metric.mem_usage
-
-  def set_abs_used_memory(self, abs_used_memory):
-    self.cur_metric.abs_used_memory = float(abs_used_memory)
-
-  def get_abs_used_memory(self):
-    return self.cur_metric.abs_used_memory
-
-  def set_abs_memory(self, abs_memory):
-    self.config.abs_memory = float(abs_memory)
-
-  def get_abs_memory(self):
-    return self.config.abs_memory
-
-  def get_slowdown(self):
-    return self.cur_metric.slowdown
-
-  def get_pending(self):
-    return self.cur_metric.pending
-
-  def get_slowdown_div(self):
-    return self.cur_metric.slowdown_div
-
-  def get_pending_div(self):
-    return self.cur_metric.pending_div
-
-  def get_mem_usage_div(self):
-    return self.cur_metric.mem_usage_div
-
-  def update_queue_config(self, queue_config):
-    self.config.capacity = float(queue_config.capacity)
-    self.config.max_capacity = float(queue_config.max_capacity)
-    self.config.abs_capacity = float(queue_config.abs_capacity)
-    self.add_pending(queue_config.pending)
-    self.config.state = queue_config.state
-
-  def add_queue_memory_usage(self, queue_memory_usage):
-    self.mus.append(queue_memory_usage.mu)
-
-  def update_queue_wish(self, queue_wish):
-    self.wish.vmem += float(queue_wish.vmem)
-    self.wish.vcpu += float(queue_wish.vcpu)
-    # To be fixed
-    self.wish.abs_capacity += queue_wish.vmem
-
-  def get_mem_usage(self):
-    return self.cur_metric.mem_usage
-
-  def set_mem_usage(self, mem_usage):
-    self.cur_metric.mem_usage = mem_usage
-
-  def set_state(self, state):
-    self.config.state = state
-
-  def set_job_count(self, job_count):
-    self.cur_metric.job_count = job_count
-
-  def get_job_count(self):
-    return self.cur_metric.job_count
+from utils import QueueData, Singleton
+from prettytable import PrettyTable
 
 class RMQueue(object):
   __metaclass__ = Singleton
@@ -182,74 +27,62 @@ class RMQueue(object):
   def display(self):
     self.tree.show()
 
-  def display_score(self, queue=None, depth=0):
+  def display_score(self, queue = None, depth = 0, table = None, printer = None):
+    flag = False
     if queue is None:
       queue = self.get_root()
-      print('------------' + utils.get_str_time() + ' SCORE ----------')
-      print('\tPENDING\tMEMORY USAGE')
-      print('QUEUE NAME\tAVG\tDIV\tAVG\tDIV')
-    print(queue.tag + '\t%8.3f' % queue.data.get_pending() + '\t%8.3f' % queue.data.get_pending_div() + '\t%8.3f' % queue.data.get_mem_usage() + '\t%8.3f' % queue.data.get_mem_usage_div())
-
+      flag = True
+      table = PrettyTable(["QUEUE NAME", "PENDING:AVG", "PENDING:DIV", "MEMORY USAGE:AVG", "MEMORY USAGE:DIV"])
+    if table is not None:
+      table.add_row([queue.tag, queue.data.get_pending(), queue.data.get_pending_div(), queue.data.get_mem_usage(), queue.data.get_mem_usage_div()])
     if not self.is_leaf(queue.tag):
       children = self.tree.children(queue.tag)
       for child in children:
-        self.display_score(child, depth + 2)
+        self.display_score(child, depth + 1, table)
+    if flag:
+      if printer is None:
+        print('------------' + utils.get_str_time() + ' SCORE ----------')
+        print table
+      else:
+        printer.write('\n------------' + utils.get_str_time() + ' SCORE ----------\n')
+        printer.write(str(table))
 
-  def display_prediction(self, queue=None, depth=0):
+  def display_prediction(self, queue = None, depth = 0, table = None, printer = None):
+    flag = False
     if queue is None:
       queue = self.get_root()
-      print('------------' + utils.get_str_time() + ' PREDICTION ----------')
-      print('QUEUE NAME            DESIRED CAPACITY')
-
-    print(queue.tag + '\t%8.3f' % queue.data.wish.capacity)
-      # print(queue.tag, 'desired capacity: %.3f' % queue.data.wish.capacity)
-
+      flag = True
+      table = PrettyTable(["QUEUE NAME", "DESIRED CAPACITY"])
+    if table is not None:
+      table.add_row([queue.tag, queue.data.wish.capacity])
     if not self.is_leaf(queue.tag):
       children = self.tree.children(queue.tag)
       for child in children:
-        self.display_prediction(child, depth + 2)
+        self.display_prediction(child, depth + 1, table)
+    if flag:
+      if printer is None:
+        print('------------' + utils.get_str_time() + ' PREDICTION ----------')
+        print table
+      else:
+        printer.write('\n------------' + utils.get_str_time() + ' PREDICTION ----------\n')
+        printer.write(str(table))
 
   def write_score(self, path):
+    FileOperator.touch(path)
     with open(path, 'a') as f:
-      self.write_score_top_down(output=f)
-
-  def write_score_top_down(self, queue=None, depth=0, output=None):
-    if queue is None:
-      queue = self.get_root()
-      output.writelines('------------' + utils.get_str_time() + ' SCORE ----------\n')
-      output.writelines('\tPENDING\tMEMORY USAGE\n')
-      output.writelines('QUEUE NAME\tAVG\tDIV\tAVG\tDIV\n')
-
-    output.writelines(queue.tag + '\t%8.3f' % queue.data.get_pending() + '\t%8.3f' % queue.data.get_pending_div() + '\t%8.3f' % queue.data.get_mem_usage() + '\t%8.3f' % queue.data.get_mem_usage_div() + '\n')
-
-    if not self.is_leaf(queue.tag):
-      children = self.tree.children(queue.tag)
-      for child in children:
-        self.write_score_top_down(child, depth + 2, output)
+      self.display_score(printer=f)
 
   def write_prediction(self, path):
-    if not FileOperator.file_exits(path):
-      with open(path, 'a'):
-        pass
-    with open(path, 'w') as f:
-      self.write_prediction_top_down(output=f)
-
-  def write_prediction_top_down(self, queue=None, depth=0, output=None):
-    if queue is None:
-      queue = self.get_root()
-
-    output.writelines(queue.tag + ',%.3f' % queue.data.wish.capacity + '\n')
-    if not self.is_leaf(queue.tag):
-      children = self.tree.children(queue.tag)
-      for child in children:
-        self.write_prediction_top_down(child, depth + 2, output)
+    FileOperator.touch(path)
+    with open(path, 'a') as f:
+      self.display_prediction(printer=f)
 
   def add_job(self, job, qname):
     queue = self.tree.get_node(qname)
     if queue.is_leaf():
       queue.data.add_job(job)
     else:
-      print("Canot add jobs to parent queue", queue.tag, queue.identifier)
+      print("Cannot add jobs to parent queue", queue.tag, queue.identifier)
 
   def add_metric(self, qname):
     queue = self.tree.get_node(qname)
@@ -314,10 +147,9 @@ class RMQueue(object):
 
     if queue.is_leaf():
       queue.data.cal_leaf_pending()
-    else:  # parent queue
-      # First, get its all chilren queue, and call each child's cal_pending function
-      # Second, get the sum of all its children pending
+    else:
       children = self.tree.children(queue.tag)
+      # print str(queue.tag) + " " + str(queue.data.cur_metric.pending)
       for child in children:
         self.cal_pending(child)
         queue.data.cur_metric.pending += child.data.get_pending()
@@ -331,23 +163,17 @@ class RMQueue(object):
     division = 0.0
     if self.is_leaf(queue.tag):
       return division
-    else:  # parent queue
+    else:
       children = self.tree.children(queue.tag)
-      # First, get its all chilren queue, and call each child's calSlowDown function
       for child in children:
         self.cal_pending_division(child)
 
-      # Second, calculate the square sum of division
       count = len(children)
       avg_pending = queue.data.get_pending() * 1.0 / count
       squareSum = 0.0
       for child in children:
         squareSum += np.square(child.data.get_pending() - avg_pending)
 
-      # Finally, calculate the standard division of the queue
-      # if count == 0:
-      #    queue.data.cur_metric.slowdown_div = division
-      #    return division
       division = np.sqrt(squareSum / count)
       queue.data.cur_metric.pending_div = division
       return division
@@ -359,52 +185,19 @@ class RMQueue(object):
     division = 0.0
     if self.is_leaf(queue.tag):
       return division
-    else:  # parent queue
+    else:
       children = self.tree.children(queue.tag)
-      # First, get its all chilren queue, and call each child's calSlowDown function
       for child in children:
         self.cal_slowdown_division(child)
 
-      # Second, calculate the square sum of division
       squareSum = 0.0
       count = len(children)
       for child in children:
         squareSum += np.square(child.data.get_slowdown() - queue.data.get_slowdown())
 
-      # Finally, calculate the standard division of the queue
-      # if count == 0:
-      #    queue.data.cur_metric.slowdown_div = division
-      #    return division
       division = np.sqrt(squareSum / count)
       queue.data.cur_metric.slowdown_div = division
       return division
-
-  def cal_memory_usage_old(self, queue=None):
-    if queue is None:
-      queue = self.get_root()
-
-    memory_usage = 0.0
-    if queue.is_leaf():
-      total_memory_seconds = queue.data.cal_leaf_mem_second()
-      total_memory_capacity = queue.data.get_abs_memory() * RMQueue.CAL_INTERVAL_IN_SECOND
-      memory_usage = 1.0 * total_memory_seconds / total_memory_capacity
-      queue.data.set_mem_usage(memory_usage)
-      queue.data.cal_abs_used_memory()
-    else:  # parent queue
-      # First, get its all chilren queue, and call each child's calMemoryUsage function
-      children = self.tree.children(queue.tag)
-      for child in children:
-        self.cal_memory_usage_old(child)
-
-      # Second, calculate the absUsedMemory of current queue
-      abs_used_memory = 0
-      for child in children:
-        abs_used_memory += child.data.get_abs_used_memory()
-      queue.data.set_abs_used_memory(abs_used_memory)
-
-      # Finally, calculate the memory usage of the queue
-      queue.data.set_mem_usage(1.0 * queue.data.get_abs_used_memory() / queue.data.get_abs_memory())
-    return queue.data.get_mem_usage()
 
   def cal_memory_usage(self, queue=None):
     if queue is None:
@@ -420,19 +213,16 @@ class RMQueue(object):
         memory_usage = 100.0 * abs_memory_usage / abs_memory_capacity
       queue.data.set_mem_usage(memory_usage)
       queue.data.set_abs_memory_usage(abs_memory_usage)
-    else:  # parent queue
-      # First, get its all chilren queue, and call each child's calMemoryUsage function
+    else:
       children = self.tree.children(queue.tag)
       for child in children:
         self.cal_memory_usage(child)
 
-      # Second, calculate the absUsedMemoryUsage of current queue
       abs_memory_usage = 0
       for child in children:
         abs_memory_usage += child.data.get_abs_memory_usage()
       queue.data.set_abs_memory_usage(abs_memory_usage)
 
-      # Finally, calculate the memory usage of the queue
       queue.data.set_mem_usage(100.0 * queue.data.get_abs_memory_usage() / queue.data.get_abs_capacity())
     return queue.data.get_mem_usage()
 
@@ -444,21 +234,17 @@ class RMQueue(object):
     if self.is_leaf(queue.tag):
       queue.data.cur_metric.mem_usage_div = std_division
       return std_division
-    else:  # parent queue
-      # First, get its all chilren queue, and call each child's calSlowDown function
+    else:
       children = self.tree.children(queue.tag)
       for child in children:
         self.cal_mem_usage_division(child)
 
-      # Second, calculate the average memory usage of all its children
       count = len(children)
       total_mem_usage = 0
       for child in children:
         total_mem_usage += child.data.get_mem_usage()
-        # print(child.data.get_mem_usage())
       avg_mem_usage = total_mem_usage / count
 
-      # Finally, calculate the standard division of the queue
       squareSum = 0
       for child in children:
         squareSum += np.square(child.data.get_mem_usage() - avg_mem_usage)
@@ -476,7 +262,6 @@ class RMQueue(object):
       children = self.tree.children(queue.tag)
       abs_capacity = 0
       for child in children:
-        # print("Queue name: %s, abs_capacity: %.2f" %(child.tag, child.data.get_abs_capacity()))
         self.cal_abs_capacity_bottom_up(child)
         abs_capacity += child.data.get_abs_capacity()
       queue.data.set_abs_capacity(abs_capacity)
@@ -494,9 +279,6 @@ class RMQueue(object):
       for child in children:
         self.cal_desired_abs_capacity_bottom_up(child)
         if child.data.config.fixed:
-          # print("FIXED")
-          # print(child.data.config.capacity)
-          # print(child.data.config.abs_capacity)
           fixed_capacity += child.data.config.capacity
         else:
           abs_capacity += child.data.wish.abs_capacity
@@ -626,8 +408,8 @@ class RMQueue(object):
 
   def score(self):
     self.before_scoring()
-    # self.cal_slowdown()
-    # self.cal_slowdown_division()
+    self.cal_slowdown()
+    self.cal_slowdown_division()
     self.cal_pending()
     self.cal_pending_division()
     self.cal_memory_usage()
@@ -647,12 +429,10 @@ class RMQueue(object):
 
 
 def parseYarnConfig(conf):
-  # YARN_CONFIG_HEAD = ["yarn", "scheduler", "capacity", "root"]
   YARN_PROPERTY_STATE = "state"
   YARN_PROPERTY_CAPACTIY = "capacity"
   YARN_PROPERTY_MAX_CAPACITY = "maximum-capacity"
   YARN_PROPERTY_QUEUE = "queues"
-  # YARN_QUEUE_STATE = ["STOPPED", "RUNNING"]
 
   rmq = RMQueue()
   tree = ET.parse(conf)
@@ -680,7 +460,6 @@ def parseYarnConfig(conf):
         else:
           rmq.move_queue(src=child, dest=queue)
 
-  # the second loop set the configuration of each queue
   for p in root:
     if p.tag != 'property':
       pass

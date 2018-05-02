@@ -17,6 +17,7 @@ def read_scheduler_csv(path):
 
 
 def read_memory_usage(path, count):
+  print path
   df = pd.read_csv(path)
   mus = []
   for i in range(count):
@@ -75,10 +76,8 @@ def read_app_started_csv(path):
 def read_prediction_csv(path):
   df = pd.read_csv(path, header=None)
   wishes = []
-  print df
   for index, row in df.iterrows():
     wish = QueueWish()
-    print row
     wish.vmem = row[0]
     wish.name = row[1]
     wishes.append(wish)

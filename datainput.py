@@ -17,15 +17,16 @@ def read_scheduler_csv(path):
 
 
 def read_memory_usage(path, count):
-  print path
   df = pd.read_csv(path)
   mus = []
-  for i in range(count):
-    mu = QueueMemoryUsage()
-    row = df.iloc[i - count]
-    mu.name = row['queueName']
-    mu.mu = row['memory']
-    mus.append(mu)
+  count = len(df)
+  if len > 0:
+    for i in range(count):
+      mu = QueueMemoryUsage()
+      row = df.iloc[i - count]
+      mu.name = row['queueName']
+      mu.mu = row['memory']
+      mus.append(mu)
   return mus
 
 
@@ -78,7 +79,7 @@ def read_prediction_csv(path):
   wishes = []
   for index, row in df.iterrows():
     wish = QueueWish()
-    wish.vmem = row[0]
-    wish.name = row[1]
+    wish.vmem = row[1]
+    wish.name = row[2]
     wishes.append(wish)
   return wishes

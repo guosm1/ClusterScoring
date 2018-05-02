@@ -81,14 +81,14 @@ def update_predict_info(rmq, cfg):
       queue.data.update_queue_wish(wish)
 
 def update_all_info(rmq, cfg):
-  update_scheduler_info(rmq, cfg)
-  update_mu_info(rmq, cfg)
-  update_cluster_info(rmq, cfg)
-  update_app_info(rmq, cfg)
-  update_app_stopped_info(rmq, cfg)
-  update_app_started_info(rmq, cfg)
+  # update_scheduler_info(rmq, cfg)
+  # update_mu_info(rmq, cfg)
+  # update_cluster_info(rmq, cfg)
+  # update_app_info(rmq, cfg)
+  # update_app_stopped_info(rmq, cfg)
+  # update_app_started_info(rmq, cfg)
   update_predict_info(rmq, cfg)
-  score(rmq, cfg)
+  # score(rmq, cfg)
   predict(rmq, cfg)
 
 def score(rmq, cfg):

@@ -189,9 +189,9 @@ class QueueData(object):
     self.mus.append(queue_memory_usage.mu)
 
   def update_queue_wish(self, queue_wish):
-    self.wish.vmem += float(queue_wish.vmem)
-    self.wish.vcpu += float(queue_wish.vcpu)
-    self.wish.abs_capacity += queue_wish.vmem
+    # self.wish.vmem = float(queue_wish.vmem)
+    # self.wish.vcpu = float(queue_wish.vcpu)
+    self.wish.abs_capacity = queue_wish.vmem
 
   def get_mem_usage(self):
     return self.cur_metric.mem_usage

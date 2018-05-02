@@ -52,9 +52,9 @@ class RMQueue(object):
     if queue is None:
       queue = self.get_root()
       flag = True
-      table = PrettyTable(["QUEUE NAME", "DESIRED CAPACITY"])
+      table = PrettyTable(["QUEUE NAME", "DESIRED MEMORY"])
     if table is not None:
-      table.add_row([queue.tag, queue.data.wish.capacity])
+      table.add_row([queue.tag, queue.data.wish.abs_capacity])
     if not self.is_leaf(queue.tag):
       children = self.tree.children(queue.tag)
       for child in children:
@@ -393,37 +393,24 @@ class RMQueue(object):
       for child in children:
         self.clear_pendings_top_down(child)
 
-  def before_scoring(self):
+  def score(self):
     self.cal_abs_capacity_bottom_up()
     self.cal_capacity_top_down()
     self.cal_abs_memory_top_down()
-
-  def after_scoreing(self):
-    self.clear_jobs_top_down()
-    self.clear_pendings_top_down()
-    self.clear_mus_top_down()
-
-  def score(self):
-    self.before_scoring()
     self.cal_slowdown()
     self.cal_slowdown_division()
     self.cal_pending()
     self.cal_pending_division()
     self.cal_memory_usage()
     self.cal_mem_usage_division()
-    self.after_scoreing()
-
-  def before_predict(self):
-    self.cal_desired_abs_capacity_bottom_up()
-
-  def after_predict(self):
-    self.clear_desired_abs_capacity()
+    self.clear_jobs_top_down()
+    self.clear_pendings_top_down()
+    self.clear_mus_top_down()
 
   def predict(self):
-    self.before_predict()
+    self.cal_desired_abs_capacity_bottom_up()
     self.cal_desired_capacity_top_down()
-    self.after_predict()
-
+    self.clear_desired_abs_capacity()
 
 def parseYarnConfig(conf):
   YARN_PROPERTY_STATE = "state"

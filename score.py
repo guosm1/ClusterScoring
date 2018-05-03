@@ -108,10 +108,10 @@ def score(rmq, cfg):
   rmq.write_score(path)
 
 def predict(rmq, cfg):
-  # try:
-  #   train_lstm.main()
-  # except Exception:
-  #   pass
+  try:
+    train_lstm.main()
+  except Exception:
+    pass
   update_all_info(rmq, cfg)
   rmq.predict()
   rmq.display_prediction()

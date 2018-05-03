@@ -2,7 +2,17 @@ import argparse
 import conf
 import datainput
 import resource_manager
+import train_lstm
 from file_operator import FileOperator
+
+def _update_scheduler(rmq, queue, delim):
+  if queue is None:
+    return
+  if not queue.is_leaf():
+    children = rmq.tree.children(queue.tag)
+    for child in children:
+      _update_scheduler(rmq, child, child.data.config.capacity * delim / 100)
+  queue.data.config.capacity = delim * 100
 
 def update_scheduler_info(rmq, cfg):
   scheduler_file = cfg.get_scheduler_metric_path()
@@ -15,6 +25,7 @@ def update_scheduler_info(rmq, cfg):
         continue
       else:
         queue.data.update_queue_config(qc)
+    _update_scheduler(rmq, rmq.get_root(), 1)
 
 def update_mu_info(rmq, cfg):
   mu_file = cfg.get_scheduler_summary_path()
@@ -81,23 +92,27 @@ def update_predict_info(rmq, cfg):
       queue.data.update_queue_wish(wish)
 
 def update_all_info(rmq, cfg):
-  # update_scheduler_info(rmq, cfg)
-  # update_mu_info(rmq, cfg)
-  # update_cluster_info(rmq, cfg)
-  # update_app_info(rmq, cfg)
-  # update_app_stopped_info(rmq, cfg)
-  # update_app_started_info(rmq, cfg)
+  update_scheduler_info(rmq, cfg)
+  update_mu_info(rmq, cfg)
+  update_cluster_info(rmq, cfg)
+  update_app_info(rmq, cfg)
+  update_app_stopped_info(rmq, cfg)
+  update_app_started_info(rmq, cfg)
   update_predict_info(rmq, cfg)
-  # score(rmq, cfg)
-  predict(rmq, cfg)
 
 def score(rmq, cfg):
+  update_all_info(rmq, cfg)
   rmq.score()
   rmq.display_score()
   path = cfg.get_stat_output_file()
   rmq.write_score(path)
 
 def predict(rmq, cfg):
+  # try:
+  #   train_lstm.main()
+  # except Exception:
+  #   pass
+  update_all_info(rmq, cfg)
   rmq.predict()
   rmq.display_prediction()
   path = cfg.get_stat_output_file()

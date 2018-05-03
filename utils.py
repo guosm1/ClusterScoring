@@ -31,7 +31,6 @@ class QueueConfig(object):
     self.pending = 0  # pending containers/applications in queue
     self.name = ""
     self.state = ""
-    self.fixed = False
 
   def display(self):
     print('queue name: %s, state: %s' % (self.name, self.state))
@@ -118,17 +117,8 @@ class QueueData(object):
       total_memory_second += job.memory_seconds
     return total_memory_second
 
-  def cal_leaf_pending(self):
-    if len(self.pendings) > 0:
-      self.cur_metric.pending = np.mean(self.pendings)
-    else:
-      self.cur_metric.pending = 0.0
-
   def get_capacity(self):
     return self.config.capacity
-
-  def set_fixed(self, fixed):
-    self.config.fixed = fixed
 
   def set_capacity(self, capacity):
     self.config.capacity = float(capacity)

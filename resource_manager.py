@@ -32,9 +32,13 @@ class RMQueue(object):
     if queue is None:
       queue = self.get_root()
       flag = True
-      table = PrettyTable(["QUEUE NAME", "PENDING:AVG", "PENDING:DIV", "MEMORY USAGE:AVG", "MEMORY USAGE:DIV"])
+      table = PrettyTable(["QUEUE", "PENDING AVG", "PENDING DIV", "MEMORY USAGE AVG(Q)", "MEMORY USAGE AVG(C)", "MEMORY USAGE DIV"])
     if table is not None:
-      table.add_row([queue.tag, queue.data.get_pending(), queue.data.get_pending_div(), queue.data.get_mem_usage(), queue.data.get_mem_usage_div()])
+      table.add_row([queue.tag, 0 if queue.data.get_pending() == 0 else "%.3f"%queue.data.get_pending(),
+                     0 if queue.data.get_pending_div() == 0 else "%.3f"%queue.data.get_pending_div(),
+                     0 if queue.data.get_mem_usage() == 0 else "%.3f"%queue.data.get_mem_usage(),
+                     0 if queue.data.cal_queue_memory_usage() == 0 else "%.3f"%queue.data.cal_queue_memory_usage(),
+                     0 if queue.data.get_mem_usage_div() == 0 else "%.3f"%queue.data.get_mem_usage_div()])
     if not self.is_leaf(queue.tag):
       children = self.tree.children(queue.tag)
       for child in children:
@@ -52,9 +56,11 @@ class RMQueue(object):
     if queue is None:
       queue = self.get_root()
       flag = True
-      table = PrettyTable(["QUEUE NAME", "DESIRED MEMORY"])
+      table = PrettyTable(["QUEUE", "DESIRED CAPACITY(Q)", "DESIRED CAPACITY(C)", "CONFIG CAPACITY"])
     if table is not None:
-      table.add_row([queue.tag, queue.data.wish.abs_capacity])
+      table.add_row([queue.tag, str(0 if queue.data.wish.capacity == 0 else "%.3f"%(100 * queue.data.wish.capacity)) + " %",
+                     0 if queue.data.wish.abs_capacity == 0 else "%.3f"%queue.data.wish.abs_capacity,
+                     str(0 if queue.data.config.capacity == 0 else "%.3f"%queue.data.config.capacity) + " %"])
     if not self.is_leaf(queue.tag):
       children = self.tree.children(queue.tag)
       for child in children:
@@ -143,10 +149,10 @@ class RMQueue(object):
       queue = self.get_root()
 
     if queue.is_leaf():
-      queue.data.cal_leaf_pending()
+      if len(queue.data.pendings) > 0:
+        queue.data.cur_metric.pending = np.mean(queue.data.pendings)
     else:
       children = self.tree.children(queue.tag)
-      print str(queue.tag) + ": root"
       for child in children:
         self.cal_pending(child)
         queue.data.cur_metric.pending += child.data.get_pending()
@@ -167,11 +173,11 @@ class RMQueue(object):
 
       count = len(children)
       avg_pending = queue.data.get_pending() * 1.0 / count
-      squareSum = 0.0
+      square_sum = 0.0
       for child in children:
-        squareSum += np.square(child.data.get_pending() - avg_pending)
+        square_sum += np.square(child.data.get_pending() - avg_pending)
 
-      division = np.sqrt(squareSum / count)
+      division = np.sqrt(square_sum / count)
       queue.data.cur_metric.pending_div = division
       return division
 
@@ -187,12 +193,12 @@ class RMQueue(object):
       for child in children:
         self.cal_slowdown_division(child)
 
-      squareSum = 0.0
+      square_sum = 0.0
       count = len(children)
       for child in children:
-        squareSum += np.square(child.data.get_slowdown() - queue.data.get_slowdown())
+        square_sum += np.square(child.data.get_slowdown() - queue.data.get_slowdown())
 
-      division = np.sqrt(squareSum / count)
+      division = np.sqrt(square_sum / count)
       queue.data.cur_metric.slowdown_div = division
       return division
 
@@ -201,15 +207,11 @@ class RMQueue(object):
       queue = self.get_root()
 
     if queue.is_leaf():
-      abs_memory_usage = queue.data.cal_queue_memory_usage()
-      abs_memory_capacity = queue.data.get_abs_capacity()
-      memory_usage = None
-      if abs_memory_capacity == 0:
-        memory_usage = 0
-      else:
-        memory_usage = 100.0 * abs_memory_usage / abs_memory_capacity
+      capacity = queue.data.get_abs_capacity()
+      memory_usage = 0.0
+      if capacity != 0:
+        memory_usage = 100.0 * queue.data.cal_queue_memory_usage() / capacity
       queue.data.set_mem_usage(memory_usage)
-      queue.data.set_abs_memory_usage(abs_memory_usage)
     else:
       children = self.tree.children(queue.tag)
       for child in children:
@@ -218,9 +220,8 @@ class RMQueue(object):
       abs_memory_usage = 0
       for child in children:
         abs_memory_usage += child.data.get_abs_memory_usage()
-      queue.data.set_abs_memory_usage(abs_memory_usage)
 
-      queue.data.set_mem_usage(100.0 * queue.data.get_abs_memory_usage() / queue.data.get_abs_capacity())
+      queue.data.set_mem_usage(100.0 * abs_memory_usage / queue.data.get_abs_capacity())
     return queue.data.get_mem_usage()
 
   def cal_mem_usage_division(self, queue=None):
@@ -242,10 +243,10 @@ class RMQueue(object):
         total_mem_usage += child.data.get_mem_usage()
       avg_mem_usage = total_mem_usage / count
 
-      squareSum = 0
+      square_sum = 0
       for child in children:
-        squareSum += np.square(child.data.get_mem_usage() - avg_mem_usage)
-      std_division = np.sqrt(squareSum / count)
+        square_sum += np.square(child.data.get_mem_usage() - avg_mem_usage)
+      std_division = np.sqrt(square_sum / count)
       queue.data.cur_metric.mem_usage_div = std_division
       return std_division
 
@@ -257,46 +258,26 @@ class RMQueue(object):
       return
     else:
       children = self.tree.children(queue.tag)
-      abs_capacity = 0
+      abs_capacity = 0.0
       for child in children:
         self.cal_abs_capacity_bottom_up(child)
         abs_capacity += child.data.get_abs_capacity()
       queue.data.set_abs_capacity(abs_capacity)
 
-  def cal_desired_abs_capacity_bottom_up(self, queue=None):
+  def cal_desired_abs_capacity_bottom_up(self, queue=None, delim = None):
     if queue is None:
       queue = self.get_root()
-
+      delim = 1
     if self.is_leaf(queue.tag):
-      return
+      queue.data.wish.capacity = queue.data.wish.abs_capacity / delim
     else:
       children = self.tree.children(queue.tag)
       abs_capacity = 0.0
-      fixed_capacity = 0.0
       for child in children:
-        self.cal_desired_abs_capacity_bottom_up(child)
-        if child.data.config.fixed:
-          fixed_capacity += child.data.config.capacity
-        else:
-          abs_capacity += child.data.wish.abs_capacity
+        self.cal_desired_abs_capacity_bottom_up(child, queue.data.config.capacity * delim / 100)
+        abs_capacity += child.data.wish.abs_capacity
 
-      for child in children:
-        if child.data.config.fixed:
-          child.data.wish.abs_capacity = abs_capacity / (100.0 - fixed_capacity) * child.data.config.capacity
-      queue.data.wish.abs_capacity = abs_capacity * 100.0 / (100.0 - fixed_capacity)
-
-  def clear_desired_abs_capacity(self, queue=None):
-    if queue is None:
-      queue = self.get_root()
-
-    queue.data.wish.abs_capacity = 0
-    if self.is_leaf(queue.tag):
-      return
-    else:
-      queue.data.cur_metric.pending = 0.0
-      children = self.tree.children(queue.tag)
-      for child in children:
-        self.clear_desired_abs_capacity(child)
+      queue.data.wish.capacity = abs_capacity / delim
 
   def cal_abs_capacity_top_down(self, queue=None):
     if queue is None:
@@ -322,9 +303,8 @@ class RMQueue(object):
       children = self.tree.children(queue.tag)
       abs_capacity = queue.data.wish.abs_capacity
       for child in children:
-        if child.data.config.fixed:
-          child.data.wish.capacity = child.data.config.capacity
-        elif abs_capacity == 0:
+        child.data.wish.capacity = child.data.config.capacity
+        if abs_capacity == 0:
           child.data.wish.capacity = 0
         else:
           child.data.wish.capacity = child.data.wish.abs_capacity / abs_capacity * 100.0
@@ -350,7 +330,6 @@ class RMQueue(object):
     if queue is None:
       queue = self.get_root()
       queue.data.cal_totalMb_mean()
-      queue.data.clear_totalMb()
 
     if self.is_leaf(queue.tag):
       return
@@ -394,23 +373,23 @@ class RMQueue(object):
         self.clear_pendings_top_down(child)
 
   def score(self):
-    self.cal_abs_capacity_bottom_up()
-    self.cal_capacity_top_down()
-    self.cal_abs_memory_top_down()
-    self.cal_slowdown()
-    self.cal_slowdown_division()
+    # self.cal_abs_capacity_bottom_up()
+    # self.cal_capacity_top_down()
+    # self.cal_abs_memory_top_down()
+    # self.cal_slowdown()
+    # self.cal_slowdown_division()
     self.cal_pending()
     self.cal_pending_division()
     self.cal_memory_usage()
     self.cal_mem_usage_division()
-    self.clear_jobs_top_down()
+    # self.clear_jobs_top_down()
     self.clear_pendings_top_down()
     self.clear_mus_top_down()
 
   def predict(self):
     self.cal_desired_abs_capacity_bottom_up()
-    self.cal_desired_capacity_top_down()
-    self.clear_desired_abs_capacity()
+    # self.cal_desired_capacity_top_down()
+    # self.clear_desired_abs_capacity()
 
 def parseYarnConfig(conf):
   YARN_PROPERTY_STATE = "state"

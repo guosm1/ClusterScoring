@@ -19,10 +19,6 @@ import tensorflow as tf
 from tensorflow.contrib.timeseries.python.timeseries import estimators as ts_estimators
 from tensorflow.contrib.timeseries.python.timeseries import model as ts_model
 import argparse
-from flask import Flask, url_for
-
-app = Flask(__name__)
-
 from file_operator import FileOperator
 import pandas as pd
 from project_dir import project_dir
@@ -206,19 +202,8 @@ def train(queue_name, csv_file, pre_file, model_dir, train_step, predict_step):
   df.loc[df['pre'] < 0, 'pre'] = 0.1
   df.to_csv(pre_file_name, header=None, mode="a", index=False)
 
-  """
-  plt.figure(figsize=(15, 2))
-  plt.axvline(99, linestyle="dotted", linewidth=4, color='r')
-  observed_lines = plt.plot(observed_times, observed, label="observation", color="k")
-  evaluated_lines = plt.plot(evaluated_times, evaluated, label="evaluation", color="g")
-  predicted_lines = plt.plot(predicted_times, predicted, label="prediction", color="r")
-  plt.legend(handles=[observed_lines[0], evaluated_lines[0], predicted_lines[0]],
-             loc="upper left")
-  plt.savefig('{0}.png'.format(queue_name))
-  """
 
-@app.route('/train_lstm')
-def main():
+def _main(flags):
   scheduler_df = pd.read_csv(SCHEDULER_INFILE, error_bad_lines=False)
   scheduler_df = scheduler_df.set_index("queueName")
   queue_names = pd.unique(scheduler_df.index.values)
@@ -234,46 +219,44 @@ def main():
     queue_information = queue_information.loc[:,['memory']]
     queue_information.insert(0, "times", queue_information.index.values)
 
-    print queue_information
-
     model_input_file = "./model_input/{0}.csv".format(queue_name)
-
     FileOperator.write_list_tocsv([], model_input_file)
 
     queue_information.to_csv(model_input_file,index=False,header=False)
     model_dir = "./model/{0}".format(queue_name)
 
-    train(queue_name, model_input_file, PRE_FILE, model_dir, FLAGS.train_step, FLAGS.predict_step)
+    train(queue_name, model_input_file, PRE_FILE, model_dir, flags["train_step"], flags["predict_step"])
 
 SCHEDULER_INFILE = path.join(project_dir, "output/scheduler_summary.csv")
 # CLUSTER_INFILE = path.join(project_dir, "output/cluster.csv")
 PRE_FILE = path.join(project_dir, "model_out/prediction.csv")
-FLAGS = None
 
-if __name__ == '__main__':
-  parser = argparse.ArgumentParser()
-  parser.register("type", "bool", lambda v: v.lower() == "true")
 
-  parser.add_argument(
-    "--time_period",
-    type=int,
-    default=7200,
-    help="the time interval for the scripts to run "
-  )
-  parser.add_argument(
-    "--train_step",
-    type=int,
-    default=10,
-    help="the step to training  "
-  )
-  parser.add_argument(
-    "--predict_step",
-    type=int,
-    default=1,
-    help="the step to predict "
-  )
+def main():
+  # parser = argparse.ArgumentParser()
+  # parser.register("type", "bool", lambda v: v.lower() == "true")
+  #
+  # parser.add_argument(
+  #   "--time_period",
+  #   type=int,
+  #   default=7200,
+  #   help="the time interval for the scripts to run "
+  # )
+  # parser.add_argument(
+  #   "--train_step",
+  #   type=int,
+  #   default=10,
+  #   help="the step to training  "
+  # )
+  # parser.add_argument(
+  #   "--predict_step",
+  #   type=int,
+  #   default=1,
+  #   help="the step to predict "
+  # )
+  flags = {"train_step": 10, "predict_step": 1}
 
-  FLAGS = parser.parse_args()
+  # FLAGS = parser.parse_args()
   tf.logging.set_verbosity(tf.logging.INFO)
-  main()
+  _main(flags)
   # app.run(host='127.0.0.1', port='5002')

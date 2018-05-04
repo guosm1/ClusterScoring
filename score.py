@@ -101,11 +101,14 @@ def update_all_info(rmq, cfg):
   update_predict_info(rmq, cfg)
 
 def score(rmq, cfg):
-  update_all_info(rmq, cfg)
-  rmq.score()
-  rmq.display_score()
-  path = cfg.get_stat_output_file()
-  rmq.write_score(path)
+  try:
+    update_all_info(rmq, cfg)
+    rmq.score()
+    rmq.display_score()
+    path = cfg.get_stat_output_file()
+    rmq.write_score(path)
+  except Exception:
+    pass
 
 def predict(rmq, cfg):
   try:

@@ -85,6 +85,12 @@ class Config:
   def set_yarn_config_path(self, path):
     self.yarn_config_path = path
 
+  def set_scheduler_summary_current_path(self, path):
+    self.scheduler_summary_current_path = path
+
+  def get_scheduler_summary_current_path(self):
+    return self.scheduler_summary_current_path
+
   def update_config(self):
     with open(self.config_file_path) as f:
       data = json.load(f)
@@ -94,6 +100,7 @@ class Config:
     self.set_job_started_path(data['job_started_path'])
     self.set_scheduler_metric_path(data['scheduler_metric_path'])
     self.set_scheduler_summary_path(data['scheduler_summary_path'])
+    self.set_scheduler_summary_current_path(data['scheduler_summary_current_path'])
     self.set_stat_interval(data['stat_interval'])
     self.set_prediction_path(data['prediction_path'])
     self.set_cluster_metric_path(data['cluster_metric_path'])
@@ -110,6 +117,7 @@ class Config:
     print('job_started_path:      \t%s' % self.job_started_path)
     print('scheduler_metric_path: \t%s' % self.scheduler_metric_path)
     print('scheduler_summary_path:\t%s' % self.scheduler_summary_path)
+    print('scheduler_summary_current_path:\t%s' % self.scheduler_summary_current_path)
     print('cluster_metric_path:   \t%s' % self.cluster_metric_path)
     print('prediction_path        \t%s' % self.prediction_path)
     print('stat_interval:         \t%ld' % self.stat_interval)

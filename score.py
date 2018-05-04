@@ -28,7 +28,7 @@ def update_scheduler_info(rmq, cfg):
     _update_scheduler(rmq, rmq.get_root(), 1)
 
 def update_mu_info(rmq, cfg):
-  mu_file = cfg.get_scheduler_summary_path()
+  mu_file = cfg.get_scheduler_summary_current_path()
   count = cfg.get_valid_queue_count()
   queue_mus = datainput.read_memory_usage(mu_file, count)
   for qmu in queue_mus:
@@ -110,13 +110,13 @@ def score(rmq, cfg):
 def predict(rmq, cfg):
   try:
     train_lstm.main()
+    update_all_info(rmq, cfg)
+    rmq.predict()
+    rmq.display_prediction()
+    path = cfg.get_stat_output_file()
+    rmq.write_prediction(path)
   except Exception:
     pass
-  update_all_info(rmq, cfg)
-  rmq.predict()
-  rmq.display_prediction()
-  path = cfg.get_stat_output_file()
-  rmq.write_prediction(path)
 
 def start(cfg):
   rmq = resource_manager.parseYarnConfig(cfg.yarn_config_path)

@@ -63,10 +63,12 @@ class HadoopUtil(object):
     apps.insert(0, 'vCores', apps['allocatedVCores'] / apps['totalCpu'])
 
     scheduler_file = os.path.join(self.file_path, "scheduler_summary.csv")
+    scheduler_file1 = os.path.join(self.file_path, "scheduler_summary_current.csv")
     write_header = True
     if FileOperator.file_exits(scheduler_file):
       write_header = False
     apps.to_csv(scheduler_file, header=write_header, index=False, mode="a+")
+    apps.to_csv(scheduler_file1, header=True, index=False, mode="w")
 
     logger.info("start get_cluster_scheduler")
     url = self.hadoop_url + "scheduler"
@@ -171,16 +173,16 @@ def main():
 
   hadoop_util.get_cluster_information()
   hadoop_util.get_commonjobs_information()
-  response = requests.get("http://127.0.0.1:5001/update/all")
-  if response.status_code == 200:
-    print("success request http://127.0.0.1:5001/update/all")
+  # response = requests.get("http://127.0.0.1:5001/update/all")
+  # if response.status_code == 200:
+  #   print("success request http://127.0.0.1:5001/update/all")
     # response = requests.get('http://127.0.0.1:5002/train_lstm')
     # if response.status_code == 200:
     #   print("success request http://127.0.0.1:5002/train_lstm")
     # else:
     #   print("fail request http://127.0.0.1:5002/train_lstm")
-  else:
-    print("fail request http://127.0.0.1:5001/update/all")
+  # else:
+  #   print("fail request http://127.0.0.1:5001/update/all")
 
 TIME_BEGIN = None
 TIME_END = None

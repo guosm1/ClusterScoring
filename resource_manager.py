@@ -32,13 +32,14 @@ class RMQueue(object):
     if queue is None:
       queue = self.get_root()
       flag = True
-      table = PrettyTable(["QUEUE", "PENDING AVG", "PENDING DIV", "MEMORY USAGE AVG(Q)", "MEMORY USAGE AVG(C)", "MEMORY USAGE DIV"])
+      table = PrettyTable(["QUEUE", "PENDING AVG", "PENDING DIV", "MEMORY USAGE AVG(Q)", "MEMORY USAGE AVG(C)", "MEMORY USAGE DIV", "ABS CAPACITY"])
     if table is not None:
       table.add_row([queue.tag, 0 if queue.data.get_pending() == 0 else "%.3f"%queue.data.get_pending(),
                      0 if queue.data.get_pending_div() == 0 else "%.3f"%queue.data.get_pending_div(),
                      0 if queue.data.get_mem_usage() == 0 else "%.3f"%queue.data.get_mem_usage(),
                      0 if queue.data.cal_queue_memory_usage() == 0 else "%.3f"%queue.data.cal_queue_memory_usage(),
-                     0 if queue.data.get_mem_usage_div() == 0 else "%.3f"%queue.data.get_mem_usage_div()])
+                     0 if queue.data.get_mem_usage_div() == 0 else "%.3f"%queue.data.get_mem_usage_div(),
+                     str(0 if queue.data.get_abs_capacity() == 0 else "%.3f"%queue.data.get_abs_capacity()) + " %"])
     if not self.is_leaf(queue.tag):
       children = self.tree.children(queue.tag)
       for child in children:
@@ -383,8 +384,8 @@ class RMQueue(object):
     self.cal_memory_usage()
     self.cal_mem_usage_division()
     # self.clear_jobs_top_down()
-    self.clear_pendings_top_down()
-    self.clear_mus_top_down()
+    # self.clear_pendings_top_down()
+    # self.clear_mus_top_down()
 
   def predict(self):
     self.cal_desired_abs_capacity_bottom_up()

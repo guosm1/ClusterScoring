@@ -3,6 +3,7 @@
   "stat_interval": 7200,
   "scheduler_metric_path": "./output/scheduler_metric.csv",
   "scheduler_summary_path": "./output/scheduler_summary.csv",
+  "scheduler_summary_current_path": "./output/scheduler_summary_current.csv",
   "job_metric_path": "./output/runningapp1.csv",
   "job_stopped_path": "./output/finishedapp.csv",
   "job_started_path": "./output/runningapp2.csv",

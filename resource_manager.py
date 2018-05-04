@@ -57,11 +57,11 @@ class RMQueue(object):
     if queue is None:
       queue = self.get_root()
       flag = True
-      table = PrettyTable(["QUEUE", "DESIRED CAPACITY(Q)", "DESIRED CAPACITY(C)", "CONFIG CAPACITY"])
+      table = PrettyTable(["QUEUE", "DESIRED CAPACITY(Q)", "DESIRED CAPACITY(C)", "ABS CAPACITY"])
     if table is not None:
       table.add_row([queue.tag, str(0 if queue.data.wish.capacity == 0 else "%.3f"%(100 * queue.data.wish.capacity)) + " %",
                      0 if queue.data.wish.abs_capacity == 0 else "%.3f"%queue.data.wish.abs_capacity,
-                     str(0 if queue.data.config.capacity == 0 else "%.3f"%queue.data.config.capacity) + " %"])
+                     str(0 if queue.data.config.abs_capacity == 0 else "%.3f"%queue.data.config.abs_capacity) + " %"])
     if not self.is_leaf(queue.tag):
       children = self.tree.children(queue.tag)
       for child in children:
@@ -275,7 +275,7 @@ class RMQueue(object):
       children = self.tree.children(queue.tag)
       abs_capacity = 0.0
       for child in children:
-        self.cal_desired_abs_capacity_bottom_up(child, queue.data.config.capacity * delim / 100)
+        self.cal_desired_abs_capacity_bottom_up(child, queue.data.config.abs_capacity * delim / 100)
         abs_capacity += child.data.wish.abs_capacity
 
       queue.data.wish.capacity = abs_capacity / delim

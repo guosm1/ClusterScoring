@@ -5,15 +5,6 @@ import resource_manager
 import train_lstm
 from file_operator import FileOperator
 
-def _update_scheduler(rmq, queue, delim):
-  if queue is None:
-    return
-  if not queue.is_leaf():
-    children = rmq.tree.children(queue.tag)
-    for child in children:
-      _update_scheduler(rmq, child, child.data.config.capacity * delim / 100)
-  queue.data.config.capacity = delim * 100
-
 def update_scheduler_info(rmq, cfg):
   scheduler_file = cfg.get_scheduler_metric_path()
   if FileOperator.file_exits(scheduler_file):
@@ -25,7 +16,6 @@ def update_scheduler_info(rmq, cfg):
         continue
       else:
         queue.data.update_queue_config(qc)
-    _update_scheduler(rmq, rmq.get_root(), 1)
 
 def update_mu_info(rmq, cfg):
   mu_file = cfg.get_scheduler_summary_current_path()
@@ -101,25 +91,22 @@ def update_all_info(rmq, cfg):
   update_predict_info(rmq, cfg)
 
 def score(rmq, cfg):
-  try:
-    update_all_info(rmq, cfg)
-    rmq.score()
-    rmq.display_score()
-    path = cfg.get_stat_output_file()
-    rmq.write_score(path)
-  except Exception:
-    pass
+  update_all_info(rmq, cfg)
+  rmq.score()
+  rmq.display_score()
+  path = cfg.get_stat_output_file()
+  rmq.write_score(path)
 
 def predict(rmq, cfg):
   try:
     train_lstm.main()
-    update_all_info(rmq, cfg)
-    rmq.predict()
-    rmq.display_prediction()
-    path = cfg.get_stat_output_file()
-    rmq.write_prediction(path)
   except Exception:
     pass
+  update_all_info(rmq, cfg)
+  rmq.predict()
+  rmq.display_prediction()
+  path = cfg.get_stat_output_file()
+  rmq.write_prediction(path)
 
 def start(cfg):
   rmq = resource_manager.parseYarnConfig(cfg.yarn_config_path)

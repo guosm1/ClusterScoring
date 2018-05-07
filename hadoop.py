@@ -1,10 +1,3 @@
-# !/usr/bin/env python
-# encoding=utf8
-"""
-Created on  : 17-10-30 上午10:23
-@author: chenxf@chinaskycloud.com
-"""
-
 import json
 import os
 import argparse
@@ -16,7 +9,6 @@ from urllib2 import URLError as urlerror
 from logger_util import get_logger
 from file_operator import FileOperator
 from pandas.core.frame import DataFrame
-import requests
 import datetime
 
 

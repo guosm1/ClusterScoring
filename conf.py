@@ -1,5 +1,6 @@
 import json
 import os
+import requests
 
 class Config:
   def __init__(self, path=None):
@@ -91,6 +92,13 @@ class Config:
   def get_scheduler_summary_current_path(self):
     return self.scheduler_summary_current_path
 
+  def update_es_rest_index(self):
+    response1 = requests.get(str(self.es_rest_address) + str(self.es_index))
+    if response1.status_code == 404:
+      response2 = requests.put(str(self.es_rest_address) + str(self.es_index))
+      if response2.status_code != 200:
+        raise Exception("Cannot fetch elasticsearch indexes", response2.text)
+
   def update_config(self):
     with open(self.config_file_path) as f:
       data = json.load(f)
@@ -107,8 +115,11 @@ class Config:
     self.set_stat_output_file(data['stat_output_file'])
     self.set_sys_total_memory(data['sys_total_memory'])
     self.set_yarn_config_path(data['yarn_config_file'])
+    self.es_rest_address = data['es_rest_address']
+    self.es_index = data['es_index']
     self.set_rest_port(data['rest_port'])
     self.set_valid_queue_count(data['valid_queue_count'])
+    self.update_es_rest_index()
 
   def display(self):
     print('--------------------------------')
@@ -124,6 +135,8 @@ class Config:
     print('stat_output_file       \t%s' % self.stat_output_file)
     print('sys_total_memory       \t%ld' % self.total_sys_memory)
     print('yarn_config_path       \t%s' % self.yarn_config_path)
+    print('es_rest_address        \t%s' % self.es_rest_address)
+    print('es_index               \t%s' % self.es_index)
     print('rest_port              \t%d' % self.rest_port)
     print('valid_queue_count      \t%d' % self.valid_queue_count)
     print('--------------------------------')

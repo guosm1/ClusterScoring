@@ -12,6 +12,8 @@
   "prediction_path": "./model_out/prediction.csv",
   "stat_output_file": "./output/stat.txt",
   "_comment_B": "System total memory in MB. It will be updated of new data written to cluster_metric_path",
+  "es_rest_address": "http://10.1.236.111:9200/",
+  "es_index": "machine_learning/",
   "sys_total_memory": 16384,
   "rest_port": 5001,
   "valid_queue_count": 1

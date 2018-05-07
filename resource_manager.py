@@ -5,6 +5,9 @@ from file_operator import FileOperator
 from treelib import Tree
 from utils import QueueData, Singleton
 from prettytable import PrettyTable
+import requests
+import json
+import conf
 
 class RMQueue(object):
   __metaclass__ = Singleton
@@ -12,6 +15,7 @@ class RMQueue(object):
     self.tree = Tree()
     self.MAX_METRIC_COUNT = 12
     self.CAL_INTERVAL_IN_SECOND = 2 * 60 * 60
+    self.conf = conf.Config("./conf/config.json")
 
   def set_stat_interval(self, interval):
     self.CAL_INTERVAL_IN_SECOND = interval
@@ -78,6 +82,38 @@ class RMQueue(object):
     FileOperator.touch(path)
     with open(path, 'a') as f:
       self.display_score(printer=f)
+
+  def request_score(self, queue = None):
+    if queue is None:
+      queue = self.get_root()
+    postData = {
+      'queue': queue.tag,
+      'pending': queue.data.get_pending(),
+      'pending_div': queue.data.get_pending_div(),
+      'memory_usage' : queue.data.get_mem_usage(),
+      'memory_usage_div' : queue.data.get_mem_usage_div(),
+      'abs_capacity' : queue.data.get_abs_capacity()
+    }
+    requests.post(str(self.conf.es_rest_address) + str(self.conf.es_index) + "score", data = json.dumps(postData))
+    if not self.is_leaf(queue.tag):
+      children = self.tree.children(queue.tag)
+      for child in children:
+        self.request_score(child)
+
+  def request_prediction(self, queue = None):
+    if queue is None:
+      queue = self.get_root()
+    postData = {
+      'queue': queue.tag,
+      'wish_capacity': queue.data.wish.capacity,
+      'wish_abs_capacity': queue.data.wish.abs_capacity,
+      'abs_capacity': queue.data.config.abs_capacity
+    }
+    requests.post(str(self.conf.es_rest_address) + str(self.conf.es_index) + "prediction", data = json.dumps(postData))
+    if not self.is_leaf(queue.tag):
+      children = self.tree.children(queue.tag)
+      for child in children:
+        self.request_prediction(child)
 
   def write_prediction(self, path):
     FileOperator.touch(path)

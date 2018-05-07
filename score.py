@@ -96,6 +96,7 @@ def score(rmq, cfg):
   rmq.display_score()
   path = cfg.get_stat_output_file()
   rmq.write_score(path)
+  rmq.request_score()
 
 def predict(rmq, cfg):
   try:
@@ -107,6 +108,7 @@ def predict(rmq, cfg):
   rmq.display_prediction()
   path = cfg.get_stat_output_file()
   rmq.write_prediction(path)
+  rmq.request_prediction()
 
 def start(cfg):
   rmq = resource_manager.parseYarnConfig(cfg.yarn_config_path)
@@ -118,7 +120,6 @@ def start(cfg):
 
 def main(config_path):
   cfg = conf.Config(config_path)
-  cfg.update_config()
   start(cfg)
 
 if __name__ == '__main__':
